@@ -1,27 +1,91 @@
 import pyaudio
 import numpy as np
 import torch
+import time
+import gc
+import urllib.request
+import os
+import RPi.GPIO as GPIO
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from picamera2 import Picamera2
 from piper import PiperVoice
 from vosk import Model, KaldiRecognizer
-import gc
-import threading
-import urllib.request
-import os
 
-# config
+# configs
+# audio
 FORMAT = pyaudio.paInt32
-CHANNELS = 1
+CHANNELS = 2
 RATE = 16000
 CHUNK = 512
 SILENCE_THRESHOLD = 300
 MIN_SPEECH_DURATION = 0.5
+# LLM
 MAX_RESPONSE_TOKENS = 50
+MODEL_TEMPERATURE = 0.7
+# video
 VIDEO_WIDTH = 320
 VIDEO_HEIGHT = 240
 VIDEO_FPS = 10
+# motors
+MOTOR_PINS = {'IN1': 17, 'IN2': 18, 'IN3': 22, 'IN4': 23}
+MOVE_DURATION = 2  # Seconds for movement actions
 
+# move
+def move_forward():
+    GPIO.output(MOTOR_PINS['IN1'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN2'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN3'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN4'], GPIO.LOW)
+    time.sleep(MOVE_DURATION)
+    stop_motors()
+def move_backward():
+    GPIO.output(MOTOR_PINS['IN1'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN2'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN3'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN4'], GPIO.HIGH)
+    time.sleep(MOVE_DURATION)
+    stop_motors()
+def turn_left():
+    GPIO.output(MOTOR_PINS['IN1'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN2'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN3'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN4'], GPIO.LOW)
+    time.sleep(1)  # Shorter duration for turning
+    stop_motors()
+def turn_right():
+    GPIO.output(MOTOR_PINS['IN1'], GPIO.HIGH)
+    GPIO.output(MOTOR_PINS['IN2'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN3'], GPIO.LOW)
+    GPIO.output(MOTOR_PINS['IN4'], GPIO.HIGH)
+    time.sleep(1)
+    stop_motors()
+def stop_motors():
+    for pin in MOTOR_PINS.values():
+        GPIO.output(pin, GPIO.LOW)
+#def test_motors():
+#    setup_motors()
+#    move_forward()
+#    time.sleep(2)
+#    turn_left()
+#    time.sleep(1)
+#    stop_motors()
+
+# Hardware init
+def setup_hardware():
+    print("\nInitialize all hardware components....\n")
+    # Motor control
+    GPIO.setmode(GPIO.BCM)
+    for pin in MOTOR_PINS.values():
+        GPIO.setup(pin, GPIO.OUT)
+    stop_motors()
+    
+    # Camera
+    global picam2
+    picam2 = Picamera2()
+    picam2.configure(picam2.create_preview_configuration(
+        main={"size": (VIDEO_WIDTH, VIDEO_HEIGHT)}
+    ))
+    
 # loading
 VOSK_PATH = "vosk-model-small-en-us-0.15"
 DEEPSEEK_PATH = "deepseek-r1-1.5b"
@@ -56,11 +120,11 @@ def load_models():
         offload_folder="./offload",
         offload_state_dict=True
     )
-    llm_tokenizer = AutoTokenizer.from_pretrained(DEEPSEEK_PATH)
+    tokenizer = AutoTokenizer.from_pretrained(DEEPSEEK_PATH)
     # Piper TTS
     tts_voice = PiperVoice.load(PIPER_PATH)
     
-    return recognizer, llm_model, llm_tokenizer, tts_voice
+    return recognizer, llm_model, tokenizer, tts_voice
 
 # Audio
 def check_microphone():
@@ -77,13 +141,13 @@ def get_sound_direction(sound):
         avg_left = np.mean(np.abs(left))
         avg_right = np.mean(np.abs(right))
         if avg_left > avg_right:
-            return "<sound from left>"
+            return "sound from left"
         elif avg_right > avg_left:
-            return "<sound from right>"
+            return "sound from right"
         else:
-            return "<sound from center>"
+            return "sound from center"
     else:
-        return "<sound from mono>"
+        return "sound from mono"
 
 def capture_audio():
     p = pyaudio.PyAudio()
@@ -148,36 +212,59 @@ def capture_video():
         objects = results.pandas().xyxy[0]["name"].tolist()
         return objects
     except Exception as e:
-            print(f"Error capturing video: {e}")
+            print(f"error capturing video: {e}")
             return []
 
 # LLM Response Generation
 def generate_response(prompt, model, tokenizer, objects=None):
     print("\nresponse...\n")
-    if objects:
-        prompt += f" Detected objects: {objects}"
+    response = ""  # Init
+    try:
+        if objects:
+            prompt += f" detected objects: {objects}"
+        
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=MAX_RESPONSE_TOKENS,
+                temperature=MODEL_TEMPERATURE,
+                do_sample=True,
+                pad_token_id=tokenizer.eos_token_id
+            )
+        
+        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        del inputs, outputs
     
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=MAX_RESPONSE_TOKENS,
-            temperature=0.7,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id
-        )
-    
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    del inputs, outputs
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        response = "Sorry, I encountered an error."
+        stop_motors()  # safe stop on error
+        
+    # motor control based on response
+        execute_commands(response.lower())
+
     gc.collect()
     return response
 
-# --- Text-to-Speech with Piper ---
+# Text-to-Speech
 def speak(text, tts_voice):
     print("Speaking...")
     tts_voice.speak(text)
 
+def execute_commands(response_text):
+    print("\nCommands...\n")
+    if any(cmd in response_text for cmd in ["forward", "move ahead"]):
+        move_forward()
+    elif "backward" in response_text:
+        move_backward()
+    elif "left" in response_text:
+        turn_left()
+    elif "right" in response_text:
+        turn_right()
+    else:
+        stop_motors()
 
 # main
 if __name__ == "__main__":
@@ -185,7 +272,9 @@ if __name__ == "__main__":
     download_models()
     
     # Initialize components
-    recognizer, llm_model, llm_tokenizer, tts_voice = load_models()
+    check_microphone()
+    recognizer, llm_model, tokenizer, tts_voice = load_models()
+    setup_hardware()
     
     try:
         while True:
@@ -198,14 +287,14 @@ if __name__ == "__main__":
             
             # video
             video = capture_video()
-            print(f"\ndetected objects: {video}\n")
+            print(f"\nEnviroment: {video}\n")
             
             # Generate
-            response = generate_response(prompt, llm_model, llm_tokenizer, video)
+            response = generate_response(prompt, llm_model, tokenizer, video)
             print(f"\nAI: {response}\n")
             
             # Speak
-            speak(response, tts_voice)
+            tts_voice.speak(response)
             
             # Clean up
             gc.collect()
@@ -213,6 +302,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nexiting...\n")
     finally:
-        # Free resources
-        del llm_model, llm_tokenizer
+        # clean up
+        stop_motors()
+        GPIO.cleanup()
+        del llm_model, tokenizer
         torch.cuda.empty_cache()
