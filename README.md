@@ -6,7 +6,6 @@ setup/dependencies:
     $curl -fsSL https://ollama.com/install.sh | sh
     $ollama run deepseeek-r1:1.5b
     $sudo apt install python3-pyaudio python3-picamera2 espeak-ng
-    $pip install transformers torch piper-tts vosk ultralytics
     $pip install torch transformers piper-tts vosk ultralytics
     Run the script once to automatically download missing models (Vosk, YOLOv5n).
 
