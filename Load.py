@@ -23,7 +23,7 @@ def load_models():
     ) # (VOSK_PATH, RATE)
     print("\n\t...loaded Vosk STT\n")
     # load Piper TTS
-    tts = piper.PiperVoice.load(
+    pip = piper.PiperVoice.load(
         model_path = "/path/to/en_US-lessac-medium.onnx",
         config_path = "/path/to/config",
     )
@@ -36,7 +36,7 @@ def load_models():
     )
     print("\n\t...loaded yolo object detection\n")
     # arrange models
-    return dpsk, vosk, tts, yolo
+    return dpsk, vosk, pip, yolo
 # camera setup
 def setup_camera():
     print("\nchecking camera...\n")

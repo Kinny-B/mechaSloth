@@ -4,7 +4,7 @@ if __name__ == "__main__":
     running = True
     prompt = ""
     # Load AI Models
-    dpsk, vosk, tts, yolo = Load.load_models()
+    dpsk, vosk, pip, yolo = Load.load_models()
     # Load Camera
     picam2 = Load.setup_camera()
     # run main loop
@@ -16,6 +16,6 @@ if __name__ == "__main__":
         # 'Think' and generate a response string
         response = Think.think(dpsk, prompt, objects)
         # 'Speak' the generated respone
-        
+        Speak.speak(pip, response)
         # 'Move' a direction by parsing the response for commands
         Move.move(response)
