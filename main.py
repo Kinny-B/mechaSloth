@@ -13,8 +13,9 @@ if __name__ == "__main__":
         prompt = Listen.listen(vosk)
         # 'Look' for and identify objects list
         objects = Look.look(yolo, picam2)
-        # 'Think' and generate a response string and seek a direction
+        # 'Think' and generate a response string
+        response = Think.think(dpsk, prompt, objects)
+        # 'Speak' the generated respone
         
-        # 'Speak' the respone
-        
-        # 'move' the direction
+        # 'Move' a direction by parsing the response for commands
+        Move.move(response)
