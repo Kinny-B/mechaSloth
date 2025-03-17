@@ -9,11 +9,11 @@ if __name__ == "__main__":
     picam2 = Load.setup_camera()
     # run main loop
     while(running):
-        # 'Listen' for speech and generate prompt
+        # 'Listen' for speech and generate prompt string
         prompt = Listen.listen(vosk)
-        # 'Look' for and identify objects
-        
-        # 'Think' and generate a response and seek a direction
+        # 'Look' for and identify objects list
+        objects = Look.look(yolo, picam2)
+        # 'Think' and generate a response string and seek a direction
         
         # 'Speak' the respone
         

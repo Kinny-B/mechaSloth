@@ -46,7 +46,7 @@ def setup_camera():
     picam2.configure(
         picam2.create_preview_configuration(
             main={
-                "size": (320,220)# (WIDTH,HEIGHT)
+                "size": (320,240)# (WIDTH,HEIGHT)
             }
         )
     )
