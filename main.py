@@ -4,7 +4,10 @@ if __name__ == "__main__":
     running = True
     prompt = ""
     # Load AI Models
-    dpsk, vosk, pip, yolo = Load.load_models()
+    dpsk = Load.getDeepseek()
+    vosk = Load.getVosk()
+    pip = Load.getPiper()
+    yolo = Load.getYolo()
     # Load Camera
     picam2 = Load.setup_camera()
     # run main loop
@@ -18,4 +21,4 @@ if __name__ == "__main__":
         # 'Speak' the generated respone
         Speak.speak(pip, response)
         # 'Move' a direction by parsing the response for commands
-        Move.move(response)
+        #Move.move(response)

@@ -6,7 +6,7 @@ from ollama import Client
 from vosk import Model, KaldiRecognizer
 from piper import PiperVoice
 from picamera2 import Picamera2
-def load_models():
+def getDeepseek():
     print("\n loading AI models...\n")
     # load DeepSeek LLM
     dpsk = Client().create(
@@ -16,27 +16,32 @@ def load_models():
         stream = False,
     )
     print("\n\t...loaded DeepSeek\n")
-    # load Vosk Speach Recognition
+    return dpsk
+def getVosk():
+    # load Vosk Speach Recognition model
     vosk = KaldiRecognizer(
         Model("vosk-model-small-en-us-0.15"),
         16000
     ) # (VOSK_PATH, RATE)
     print("\n\t...loaded Vosk STT\n")
-    # load Piper TTS
+    return vosk
+def getPiper():
+    # load Piper TTS model
     pip = piper.PiperVoice.load(
-        model_path = "/path/to/en_US-lessac-medium.onnx",
-        config_path = "/path/to/config",
+        model_path = "rhaspy/en_US-lessac-low.onnx",
+        config_path = "rhaspy/en_US-lessac-low.onnx.json",
     )
     print("\n\t...loaded Piper TTS\n")
+    return pip
+def getYolo():
     # load YOLOv5n *Object Detection*
     yolo = torch.hub.load(
         "ultralytics/yolov5",
         "custom",
-        path = "yolov5n.pt"
+        path = "yolo/yolov5n.pt"
     )
     print("\n\t...loaded yolo object detection\n")
-    # arrange models
-    return dpsk, vosk, pip, yolo
+    return yolo
 # camera setup
 def setup_camera():
     print("\nchecking camera...\n")
