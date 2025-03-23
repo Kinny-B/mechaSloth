@@ -12,7 +12,7 @@ def getDeepseek():
     dpsk = Client().create(
         model = 'mecha-sloth',
         from_ = 'deepseek-r1:1.5b',
-        system = 'you are a robot assitant named mecha-sloth',
+        system = 'you are a robot assitant named mecha-sloth.',
         stream = False,
     )
     print("\n\t...loaded DeepSeek\n")
@@ -23,6 +23,8 @@ def getVosk():
         Model("vosk-model-small-en-us-0.15"),
         16000
     ) # (VOSK_PATH, RATE)
+    vosk.SetWords(True) # word level timings
+    vosk.SetPartialWords(True) # get partial results
     print("\n\t...loaded Vosk STT\n")
     return vosk
 def getPiper():
