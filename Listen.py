@@ -6,7 +6,7 @@ RATE = 16000
 CHUNK = 4096
 CHANNELS = 1
 FORMAT = pyaudio.paInt16
-LEN = 10
+LEN = 8
 # get audio then prompt
 def listen(voskRec):
 	# capture audio

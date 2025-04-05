@@ -29,9 +29,9 @@ def getVosk():
     return vosk
 def getPiper():
     # load Piper TTS model
-    pip = piper.PiperVoice.load(
-        model_path = "rhaspy/en_US-lessac-low.onnx",
-        config_path = "rhaspy/en_US-lessac-low.onnx.json",
+    pip = PiperVoice.load(
+        model_path = "piper/en_US-ryan-low.onnx",
+        config_path = "piper/en_US-ryan-low.onnx.json",
     )
     print("\n\t...loaded Piper TTS\n")
     return pip

@@ -1,4 +1,5 @@
 from ollama import Client
+import json
 # Large-Language-Model Ollama Distilled 'DeepSeek-R1:1b'
 # 'Think' of a response and direction from prompt and objects using DeepSeek LLM
 def think(dpsk, prompt):
