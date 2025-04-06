@@ -31,3 +31,4 @@ def look(image_path):
         })
     
     return objects
+
