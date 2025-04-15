@@ -6,6 +6,7 @@ from ollama import Client
 from vosk import Model, KaldiRecognizer
 from piper import PiperVoice
 from picamera2 import Picamera2
+import time
 def getDeepseek():
     print("\n loading AI models...\n")
     # load DeepSeek LLM
@@ -49,6 +50,9 @@ def setup_camera():
     print("\nchecking camera...\n")
     global picam2
     picam2 = Picamera2()
+    picam2.start()
+    time.sleep(2)
+    """
     # preview window
     picam2.configure(
         picam2.create_preview_configuration(
@@ -57,4 +61,5 @@ def setup_camera():
             }
         )
     )
+    """
     return picam2

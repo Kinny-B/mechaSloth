@@ -1,11 +1,8 @@
-from picamera2 import Picamera2
+#Look Function
 from ultralytics import YOLO
 import cv2
 
-# Load the YOLOv8 model (you can specify your own model path)
-model = YOLO("yolov8n.pt")  # Or yolov8s.pt, yolov8m.pt, etc.
-
-def look(image_path):
+def look(yolo, picam2):
     """
     Detects objects in the given image using a YOLO model.
     
@@ -15,7 +12,8 @@ def look(image_path):
     Returns:
         list of dict: A list containing detected objects with their class names and confidence scores.
     """
-    results = model(image_path)
+    picam2.capture_file("image.jpg")
+    results = yolo("/home/kinbok/mechasloth/src/image.jpg")
     
     # Get the first result (assumes batch size = 1)
     detections = results[0]
@@ -31,4 +29,3 @@ def look(image_path):
         })
     
     return objects
-
