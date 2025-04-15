@@ -1,12 +1,12 @@
+# using drivers from adafruit-circuitpython-motorkit for ease of use with 'Adafruit Pi motorHAT'.
 import time
-import RPi.GPIO as GPIO
-# Motor Control
-distance = 0
-direction = ""
-
-# motors
-MOTOR_PINS = {'IN1': 17, 'IN2': 18, 'IN3': 22, 'IN4': 23}
-MOVE_DURATION = 2  # Seconds for movement actions
+import busio
+from adafruit_motorkit import MotorKit
+import board
+# setup
+i2c = busio.I2C(board.SCL, board.SDA)
+kit = MotorKit(i2c=board.I2C())
+MOVE_DURATION = 5
 # parse response for movement
 def move(response):
     print("\nseeking path to move...\n")
@@ -20,42 +20,37 @@ def move(response):
         turn_right()
     else:
         stop_motors()
-# move
+# move functions
+def stop_motors():
+    kit.motor1.throttle = 0
+    kit.motor2.throttle = 0
+    kit.motor3.throttle = 0
+    kit.motor4.throttle = 0
 def move_forward():
-    GPIO.output(MOTOR_PINS['IN1'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN2'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN3'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN4'], GPIO.LOW)
+    kit.motor1.throttle = 1
+    kit.motor2.throttle = 1
+    kit.motor3.throttle = 1
+    kit.motor4.throttle = 1
     time.sleep(MOVE_DURATION)
     stop_motors()
 def move_backward():
-    GPIO.output(MOTOR_PINS['IN1'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN2'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN3'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN4'], GPIO.HIGH)
+    kit.motor1.throttle = -1
+    kit.motor2.throttle = -1
+    kit.motor3.throttle = -1
+    kit.motor4.throttle = -1
     time.sleep(MOVE_DURATION)
     stop_motors()
 def turn_left():
-    GPIO.output(MOTOR_PINS['IN1'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN2'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN3'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN4'], GPIO.LOW)
-    time.sleep(1)  # Shorter duration for turning
+    kit.motor1.throttle = 0.2
+    kit.motor2.throttle = 0.2
+    kit.motor3.throttle = 1
+    kit.motor4.throttle = 1
+    time.sleep(MOVE_DURATION)
     stop_motors()
 def turn_right():
-    GPIO.output(MOTOR_PINS['IN1'], GPIO.HIGH)
-    GPIO.output(MOTOR_PINS['IN2'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN3'], GPIO.LOW)
-    GPIO.output(MOTOR_PINS['IN4'], GPIO.HIGH)
-    time.sleep(1)
+    kit.motor1.throttle = 1
+    kit.motor2.throttle = 1
+    kit.motor3.throttle = 0.2
+    kit.motor4.throttle = 0.2
+    time.sleep(MOVE_DURATION)
     stop_motors()
-def stop_motors():
-    for pin in MOTOR_PINS.values():
-        GPIO.output(pin, GPIO.LOW)
-#def test_motors():
-#    setup_motors()
-#    move_forward()
-#    time.sleep(2)
-#    turn_left()
-#    time.sleep(1)
-#    stop_motors()
