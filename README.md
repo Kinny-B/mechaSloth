@@ -9,9 +9,7 @@ setup/dependencies:
     create virtual enviroment with system site packages
     $python3 -m venv --system-site-packages ~/venv
     $source .venv/bin/activate
-    $pip install torch transformers piper-tts vosk ultralytics
-    cd yolov5
-    pip install -r requirements.txt
+    $pip install transformers piper-tts vosk gitpython matplotlib numpy opencv-python pillow psutil PyYAML requests scipy thop torch torchvision tdqm ultralytics
 
 run:
     $source .venv/bin/activate
