@@ -9,4 +9,4 @@ def speak(pip, response):
 	#
 	wav_file = wave.open('output.wav','w')
 	pip.synthesize(response,wav_file)
-	os.system("aplay /home/kinbok/mechasloth/src/output.wav")
+	os.system("aplay /src/output.wav")

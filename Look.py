@@ -9,7 +9,7 @@ def look(yolo):
     if result:
         cv2.imwrite('image.png', frame)
     # Load image with OpenCV
-    image = cv2.imread("/home/kinbok/mechasloth/src/image.png")
+    image = cv2.imread("/src/image.png")
     # Release the webcam
     _cam.release()
     # return Inference

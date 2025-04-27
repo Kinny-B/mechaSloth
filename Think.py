@@ -1,73 +1,37 @@
-from ollama import Client 
+from ollama import Client
 import json
-from Load import getDpsk  # Import the model loader
-
-# Initialize the client and model state
-_client = None
-_model_name = None
-
-def _load_model_once():
-    """Ensure the model is loaded only once when the module is imported"""
-    global _client, _model_name
-    
-    if _client is None:
-        _client = Client()
-        _model_name = getDpsk() or 'mecha-sloth'  # Use configured model or default
-        print(f"\nModel '{_model_name}' loaded successfully (ready for thinking)\n")
-
-# Load the model immediately when this module is imported
-_load_model_once()
-
-def think(prompt, objects=None):
-    """
-    Generate a thoughtful response using the loaded LLM
-    
-    Args:
-        prompt (str): The input prompt/question
-        objects (str/list/dict, optional): Detected objects from Look.py
-    
-    Returns:
-        str: The generated response
-    """
-    print("\n[THINKING ENGINE ACTIVATED]")
-    print(f"Input prompt: {prompt[:100]}...")  # Show first 100 chars of prompt
-    
-    # Input validation
-    if not isinstance(prompt, str):
-        error_msg = "Error: Prompt must be a string"
-        print(error_msg)
-        return error_msg
-    
-    # Enhance prompt with object detection if available
-    full_prompt = prompt
-    if objects:
-        if isinstance(objects, (list, dict)):
-            objects_str = json.dumps(objects, indent=2)
-        else:
-            objects_str = str(objects)
-        full_prompt += f"\n\nCONTEXT - Detected Objects:\n{objects_str}"
-        print(f"Added {len(objects_str.split())} object tokens to prompt")
-
-    try:
-        # Generate response using the pre-loaded model
-        response = _client.chat(
-            model=_model_name,
-            messages=[{'role': 'user', 'content': full_prompt}],
-            stream=False,
-        )
-        
-        # Process response
-        if response and 'message' in response and 'content' in response['message']:
-            content = response['message']['content'].strip()
-            print("\n[THOUGHT GENERATION COMPLETE]")
-            print(f"Response length: {len(content)} characters")
-            return content
-        else:
-            error_msg = "Error: Invalid response structure from model"
-            print(error_msg)
-            return error_msg
-            
-    except Exception as e:
-        error_msg = f"Generation Error: {str(e)}"
-        print(error_msg)
-        return error_msg
+# Large-Language-Model Ollama Distilled 'DeepSeek-R1:1b'
+# prepare the prompt by adding objects and context
+def context(prompt, vision):
+	objects = vision.pandas().xyxy[0].name
+	print("\n\tobjects identified:\n")
+	print(objects)
+	context = "you are a robot with camera and wheels attached to you. you can move a direction simply by including it in your next response. you see the following objects: "
+	objects_str = ", ".join(objects)
+	print(f"Added {len(objects_str.split())} object tokens to prompt")
+	prompt_parts = [prompt, context, objects_str]
+	full_prompt = " ".join(prompt_parts)
+	return(full_prompt)
+# 'Think' of a response and direction from prompt and objects using DeepSeek LLM
+def think(prompt):
+	print("\nthinking...\n", prompt)
+	# str type check
+	if not isinstance(prompt, str):
+		response = "is not a valid string"
+		print(response)
+		return response
+#   prompt += ",detected objects: {objects}"
+	# generate
+	response = Client().chat(
+		model='mecha-sloth',
+		messages=[{'role': 'user', 'content': prompt}],
+		stream=False,
+	)
+	# seperate response
+	if response and 'message' in response and 'content' in response['message']:
+		content = response['message']['content'].strip()
+	else:
+		print("/*!*thinking error*!*/n")
+	# test print response then return
+	print(response, "\t...thought generated:\n")
+	return content

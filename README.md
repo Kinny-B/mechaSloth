@@ -7,9 +7,9 @@ setup/dependencies:
     $ollama run deepseeek-r1:1.5b # to end session /bye #
     $sudo apt install python3-pyaudio python3-picamera2 espeak-ng
     create virtual enviroment with system site packages
-    $python3 -m venv --system-site-packages ~/venv
-    $source .venv/bin/activate
-    $pip install transformers piper-tts vosk gitpython matplotlib numpy opencv-python pillow psutil PyYAML requests scipy thop torch torchvision tdqm ultralytics
+    $python3 -m venv2 --system-site-packages ~/venv2
+    $source .venv2/bin/activate
+    $pip3 install torch transformers piper-tts vosk ultralytics ollama adafruit-circuitpython-motorkit
 
 run:
     $source .venv/bin/activate
