@@ -3,21 +3,18 @@ import Load, Listen, Look, Move, Speak, Think
 if __name__ == "__main__":
 	running = 1
     # Load AI Models
-	dpsk = Load.getDeepseek()
 	vosk = Load.getVosk()
 	pip = Load.getPiper()
-	#yolo = Load.getYolo()
-	# Load Camera
-	#picam2 = Load.setup_camera()
+	yolo = Load.getYolo()
 	# run main loop with keyboard interupt block
 	try:
 		while(running):
 			# 'Listen' for speech and generate prompt string
 			prompt = Listen.listen(vosk)
 			# 'Look' for and identify objects list
-			#objects = Look.look(yolo, picam2)
+			objects = Look.look(yolo)
 			# 'Think' and generate a response string
-			response = Think.think(dpsk, prompt)
+			response = Think.think(prompt)
 			# 'Speak' the generated respone
 			Speak.speak(pip, response)
 			# 'Move' a direction by parsing the response for commands
