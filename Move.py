@@ -27,30 +27,30 @@ def stop_motors():
     kit.motor3.throttle = 0
     kit.motor4.throttle = 0
 def move_forward():
-    kit.motor1.throttle = 0.8
-    kit.motor2.throttle = 0.8
-    kit.motor3.throttle = 0.8
-    kit.motor4.throttle = 0.8
+    kit.motor1.throttle = -1
+    kit.motor2.throttle = -1
+    kit.motor3.throttle = -1
+    kit.motor4.throttle = -1
     time.sleep(MOVE_DURATION)
     stop_motors()
 def move_backward():
-    kit.motor1.throttle = -0.8
-    kit.motor2.throttle = -0.8
-    kit.motor3.throttle = -0.8
-    kit.motor4.throttle = -0.8
+    kit.motor1.throttle = 1
+    kit.motor2.throttle = 1
+    kit.motor3.throttle = 1
+    kit.motor4.throttle = 1
     time.sleep(MOVE_DURATION)
     stop_motors()
 def turn_left():
-    kit.motor1.throttle = -0.3
-    kit.motor2.throttle = -0.3
-    kit.motor3.throttle = 0.3
-    kit.motor4.throttle = 0.3
+    kit.motor1.throttle = 0.5
+    kit.motor2.throttle = 0.5
+    kit.motor3.throttle = -0.5
+    kit.motor4.throttle = -0.5
     time.sleep(MOVE_DURATION)
     stop_motors()
 def turn_right():
-    kit.motor1.throttle = 0.3
-    kit.motor2.throttle = 0.3
-    kit.motor3.throttle = -0.3
-    kit.motor4.throttle = -0.3
+    kit.motor1.throttle = -0.5
+    kit.motor2.throttle = -0.5
+    kit.motor3.throttle = 0.5
+    kit.motor4.throttle = 0.5
     time.sleep(MOVE_DURATION)
     stop_motors()
