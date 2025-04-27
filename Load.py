@@ -38,9 +38,7 @@ def getPiper():
 def getYolo():
     # load pre-trained YOLOv5n *Object Detection*
     yolo = torch.hub.load(
-        "ultralytics/yolov5",
-        "yolov5s",
-        pretrained=True
+        "/src/yolo/yolov5s"
     )
     yolo.conf = 0.3  # NMS confidence threshold
     yolo.iou = 0.5  # NMS IoU threshold
